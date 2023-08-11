@@ -21,17 +21,24 @@ namespace AzureRedisCache.Controllers
         public async Task<IActionResult> GetProducts()
         {
             List<Product> products = new List<Product>();
-            var cache = await _cacheService.Get("products");
-            if (!string.IsNullOrEmpty(cache))
+            products  = await _cacheService.Get<List<Product>>("products");
+            if (products!=null&&products.Count>0)
             {
-                products = JsonConvert.DeserializeObject<List<Product>>(cache);
+                return Ok(products);
 
             }
             else
             {
                 products = await _cacheService.MakeFakeProductsData();
-                await _cacheService.Set(products, "products");
+                await _cacheService.Set<List<Product>>(products, "products");
             }
+            return Ok(products);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> AddProduct([FromBody] Product product)
+        {
+            List<Product> products = await _cacheService.MakeFakeProductsData(product);
             return Ok(products);
         }
 
